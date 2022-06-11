@@ -1,16 +1,17 @@
-'''
-In this step I creat the deck and imports the random module that will help
-me shuffle the deck.
-'''
 
 import random
+playing = True
 
 suits = ('Hearts', 'Diamonds', 'Spades', 'Clubs')
 ranks = ('Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King', 'Ace')
 values = {'Two':2, 'Three':3, 'Four':4, 'Five':5, 'Six':6, 'Seven':7, 'Eight':8, 'Nine':9, 'Ten':10, 'Jack':10,
          'Queen':10, 'King':10, 'Ace':11}
 
-playing = True
+serial_number = [1,2,3,4,5,6,7,8,9,10]
+bet_number = [5,10,15,20,25,30,35,40,45,50]
+bet_amount = {'1':5,'2':10,'3':15,'4':20,'5':25,'6':30,'7':35,'8':40,'9':45,'10':50}
+zip_dict = zip(serial_number, bet_amount)
+
 
 
 class Card:
@@ -81,12 +82,6 @@ class Chips:
         return self.total, amount
 
 
-
-serial_number = [1,2,3,4,5,6,7,8,9,10]
-bet_number = [5,10,15,20,25,30,35,40,45,50]
-bet_amount = {'1':5,'2':10,'3':15,'4':20,'5':25,'6':30,'7':35,'8':40,'9':45,'10':50}
-zip_dict = zip(serial_number, bet_amount)
-# bet_options = dict(zip_dict)
 def take_bet():
     while True:
         for a,b in zip(serial_number, bet_number):
@@ -94,6 +89,26 @@ def take_bet():
         try:
             bet_selection = input("Choose the amount you want to bet on: ")
             print(f"You are betting on {bet_amount[bet_selection]} chips!")
+            if bet_selection == '1':
+                bank.bet = 5
+            elif bet_selection == '2':
+                bank.bet = 10
+            elif bet_selection == '3':
+                bank.bet = 15
+            elif bet_selection == '4':
+                bank.bet = 20
+            elif bet_selection == '5':
+                bank.bet = 25
+            elif bet_selection == '6':
+                bank.bet = 30
+            elif bet_selection == '7':
+                bank.bet = 35
+            elif bet_selection == '8':
+                bank.bet = 40
+            elif bet_selection == '9':
+                bank.bet = 45
+            elif bet_selection == '10':
+                bank.bet = 50
             break
         except KeyError:
             print("You have to type the number of your selection")
@@ -101,16 +116,9 @@ def take_bet():
 
         return bet_amount[bet_selection]
 
-
-hit_play = True
-
-
 def hit(deck, hand):
     hand.add_card(deck.deal())
     hand.adjust_for_ace()
-
-
-
 
 def hit_or_stay(deck, hand):
     '''
@@ -130,16 +138,27 @@ def hit_or_stay(deck, hand):
             break
         else:
             print("You have to choose 1 or 2: ")
-            hit_ask = input("Type 1 to hit or 2 to stand: ")
             continue
 
         if hit_ask == '1':
             hit(deck, hand)
+            show_all_player(player)
+            print(player.value)
+            if player.value < 21:
+                hit_or_stay(deck,player)
+            elif player.value == 21:
+                player_wins(bank.bet)
+            elif player.value > 21:
+                player_busts(bank.bet)
 
-        elif hit_ask == '2':
-            hit_play = False
+
+        if hit_ask == '2':
+
+            while dealer.value < 17:
+                dealer.add_card(deck.deal())
+                break
         break
-    if player.value > 21:
+    if player.value > 21 and hand.aces:
         adjust_for_ace()
 
 
@@ -153,18 +172,20 @@ def show_some_dealer(dealer):
     print("Dealer's cards are:\n ")
     print(dealer.cards[1])
 
-    print('\n')
+
+
 
 
 def show_all_player(player):
     print("Your cards are:\n ")
     for card in player.cards:
         print(card)
+    return player
 
 
-def show_all_dealer(dealer):
+def show_all_dealer():
     print("Dealer's cards are:\n ")
-    for card in player.cards:
+    for card in dealer.cards:
         print(card)
 
 
@@ -180,7 +201,7 @@ def player_wins(amount):
     win = bank.win_bet(amount)
 
 
-def dealer_busts(amount):
+def dealer_busts():
     player_wins(amount)
 
 
@@ -192,19 +213,12 @@ def push():
     pass
 
 
-
-
 game_on = True
-while True:
+while game_on:
     # Print an opening statement
-    print("Welcome to PALM TREE Casino!")
-    print("Here, we will make your dreams come true")
-    player = input("What is your name? \n")
-    print(f"There you go {player}, 100$ on the house added to your account")
-    print("Follow me to the BlackJack table!")
+    print("Welcome!")
 
     # Create & shuffle the deck, deal two cards to each player
-
     deck = Deck()
     deck.shuffle()
     player = Hand()
@@ -216,76 +230,51 @@ while True:
 
     # Set up the Player's chips
     bank = Chips()
+    bank.total = 100
+    bank.bet = 0
 
     # Prompt the Player for their bet
-    print(f"{show_all_player(player)}")
-    print(f"{show_some_dealer(dealer)}")
-    serial_number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    bet_number = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    bet_amount = {'1': 5, '2': 10, '3': 15, '4': 20, '5': 25, '6': 30, '7': 35, '8': 40, '9': 45, '10': 50}
-    zip_dict = zip(serial_number, bet_amount)
-    bet_options = dict(zip_dict)
+    show_all_player(player)
+    show_some_dealer(dealer)
+    take_bet()
 
 
-    def take_bet():
-        while True:
-            for a, b in zip(serial_number, bet_number):
-                print(a, b)
-            try:
-                bet_selection = input("Choose the amount you want to bet on: ")
-                print(f"You are betting on {bet_amount[bet_selection]} chips!")
-                break
-            except KeyError:
-                print("You have to type the number of your selection")
-                continue
+    while playing:
+        hit_or_stay(deck, player)
 
-            return bet_amount[bet_selection]
-
-
-
-
-        # global playing
-    while playing:  # recall this variable from our hit_or_stand function
-
-        # hit_or_stay(deck, player)
-
-        # Prompt for Player to Hit or Stand
-
-        # Show cards (but keep one dealer card hidden)
-        print(f"Your cards are {show_all_player(player)} with the value of {player.value}")
-        print(f"Dealer's cards are {show_some_dealer(dealer)}")
-
-        # If player's hand exceeds 21, run player_busts() and break out of loop
         if player.value > 21:
-            player_busts(amount)
+            player_busts(bank.bet)
         else:
             hit_or_stay(deck, player)
 
-            break
+
+        # print(f"Your cards are with the value of {player.value}")
+        # show_some_dealer(dealer)
 
         # If Player hasn't busted, play Dealer's hand until Dealer reaches 17
-        while player.value <= 21:
+        while player.value < 21 and dealer.value < 17:
             dealer.add_card(card)
             if dealer.value >= 17:
                 break
 
         # Show all cards
         show_all_player(player)
-        show_all_dealer(dealer)
+        show_all_dealer()
 
         # Run different winning scenarios
-        if player_wins() == True:
-            player_wins(amount)
+        if player.value > dealer.value and player.value <= 21:
+            player_wins(bank.bet)
+            bank.win_bet(bank.bet)
         else:
-            player_busts(amount)
+            player_busts(bank.bet)
 
-    # Inform Player of their chips total
+        # Inform Player of their chips total
+        print(f"You now have {bank.total} chips in your account!")
 
-    # Ask to play again
     play_again = int(input("Type 1 for another round, type 2 to go home: "))
     if play_again == '1':
         game_on = True
 
-    #         break
-    else:
+    elif play_again == '2':
         game_on = False
+        quit()
